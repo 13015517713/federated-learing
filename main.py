@@ -40,7 +40,7 @@ def read_options():
                         default=64)
     parser.add_argument('--epochs',
                         type=int,
-                        default=1)
+                        default=20)
     parser.add_argument('--rounds',
                         type=int,
                         default=50)
