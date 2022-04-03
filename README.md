@@ -1,10 +1,9 @@
 # federated-learing
 
-# how to parallel clients:
-- I can make it serial by one forloop
-- I can use async forloops ※
-- I perfer second method and I won't constrain which gpu to choose
+## objects
+- Simulate more clients in a standalone machine
+- Every client share one model
 
-# todo
-- get params from model self without trainer
-- 
+## todo
+- [x] add algorithms such as fedprox,fedper and so on
+- [x] support fast model in which every model has its own memory. It's convenient to extend.
