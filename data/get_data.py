@@ -3,7 +3,7 @@ import torchvision
 from torchvision import transforms
 from torch.utils.data import Subset 
 # kstored_path = './stored_data'
-kstored_path = '/home/wcx/gitProject/federated-learing/data/stored_data'
+kstored_path = 'data/stored_data'
 def cifar10_transforms():
     mean=[0.49139968,0.48215841,0.44653091]
     stdv=[ 0.2023,0.1994,0.2010]  

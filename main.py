@@ -75,7 +75,6 @@ def read_options():
     random.seed(0)
     np.random.seed(0)
     torch.cuda.manual_seed_all(0)
-    
     # prepare dataset
     main_train_dataset, main_test_dataset,  \
                 clients_trainset_list, clients_testset_list=  \
@@ -104,10 +103,11 @@ def read_options():
     optim_class = getattr(optim_lib, 'Optimizer')
     global_server = Server(global_model, global_trainer, main_test_dataset, clients, optim_class(), parsed)
     logging.debug('server starts to communicate with clients.')
-    global_server.run()
+    return global_server
 
 def main():
-    server, clients = read_options()  
+    global_server = read_options()
+    global_server.run()
 
 if __name__ == '__main__':
     main()
