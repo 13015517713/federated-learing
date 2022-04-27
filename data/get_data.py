@@ -2,44 +2,15 @@ import numpy as np
 import torchvision
 from torchvision import transforms
 from torch.utils.data import Subset 
-# kstored_path = './stored_data'
 kstored_path = 'data/stored_data'
-def cifar10_transforms():
-    mean=[0.49139968,0.48215841,0.44653091]
-    stdv=[ 0.2023,0.1994,0.2010]  
-    train_transforms = transforms.Compose([
-        transforms.RandomCrop(32, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=stdv),
-    ])
-    test_transforms = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize(mean=mean, std=stdv),
-    ])
-    return train_transforms, test_transforms
-#   load cifar10 data
-#   return train dataset and test dataset
-##      train_dataset : include train_X and train_Y
-##      test_dataset : include test_X and test_Y
 def load_cifar10_data(datahome=kstored_path):
-    train_tran, test_tran = cifar10_transforms()
-    train_dataset = torchvision.datasets.CIFAR10(datahome, train=True, transform=train_tran, download=True)
-    test_dataset = torchvision.datasets.CIFAR10(datahome, train=False, transform=test_tran)
+    trans_func = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    train_dataset = torchvision.datasets.CIFAR10(datahome, train=True, transform=trans_func, download=True)
+    test_dataset = torchvision.datasets.CIFAR10(datahome, train=False, transform=trans_func, download=True)
     return train_dataset, test_dataset
 load_method = {
     'cifar10' : load_cifar10_data
 }
-#   get non iid dataset
-##      test dataset is global, not local dataset splited
-##      in this situation, all clients share one dataset
-#    return
-##     maintrain_set : full trainset
-##     maintest_set : full testset
-##     [subtrain_set] : splited train_dataset for every client
-##     [subtest_set] : full testset
-#    ref
-##     
 def get_dataset_fed(data_name, class_nums, client_nums, method, alpha=None, data_home=kstored_path):
     train_dataset, test_dataset = load_method[data_name]()
     train_len = len(train_dataset)
@@ -55,15 +26,26 @@ def get_dataset_fed(data_name, class_nums, client_nums, method, alpha=None, data
         for c, frac in zip(class_idx, class_distribution):
             for i, idcs in enumerate(np.split(c, (np.cumsum(frac)[:-1]*len(c)).astype(int) )):
                 data_idx[i] += idcs.tolist()
-    all_len = 0
-    for i, data in enumerate(data_idx):
-        all_len += len(data)
-        print(f'client id={i} train_set length is {len(data)}.')
+    # set one class for every client
+    elif method == "non-iid-one":
+        assert class_nums==client_nums
+        for client_id in range(client_nums):
+            onedata_idx = np.where(train_y == client_id)[0]
+            data_idx[client_id] = onedata_idx
+    all_len = len(train_y)
+    client_train_set = []
+    client_test_set = []
+    for i, idx in enumerate(data_idx):
+        # split client data to train and test
+        np.random.shuffle(idx)
+        train_len = 0.9*len(idx)
+        train_idx = idx[:train_len]
+        test_idx = idx[train_len:]
+        client_train_set.append(Subset(train_dataset, train_idx))
+        client_test_set.append(Subset(train_dataset, test_idx))
+        print(f'client id={i} train_set length is {len(idx)}.')
     print(f'all train_set length is {all_len}.')
-    # create sub dataset
-    subtrain_set = [Subset(train_dataset, data_idx[i]) for i in range(client_nums)] 
-    subtest_set = [test_dataset for _ in range(client_nums)]
-    return train_dataset, test_dataset, subtrain_set, subtest_set
+    return train_dataset, test_dataset, client_train_set, client_test_set
     
 if __name__ == '__main__':
     get_dataset_fed('cifar10', 10, 16, 'non-iid', alpha=0.1)

@@ -91,7 +91,7 @@ def read_options():
     clients = []
     for i in range(parsed['client_nums']):
         # model = model_class() if parsed['mode'] == 'fast' else global_model
-        model = global_model
+        model = model_class()
         trainer = model_trainer(model, epochs=parsed['epochs'], lr=parsed['lr'])
         client = Client(i, model, trainer, clients_trainset_list[i], 
                         clients_testset_list[i],
