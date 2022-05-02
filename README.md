@@ -7,4 +7,4 @@ This frame about federated learning is based on [fedprox](https://github.com/lit
 
 ## todo
 - [ ] implement algorithms such as fedprox,fedper and so on
-- [ ] support fast model in which every model has its own memory. It's convenient to extend.
+- [ ] rewrite get_data.py to make code mode beatiful

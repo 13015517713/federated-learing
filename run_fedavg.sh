@@ -1,13 +1,13 @@
 #!/usr/bin/bash
 
 python main.py --optimizer 'fedavg' \
-            --client_nums 16 \
-            --dataset 'cifar10' \
-            --part_method 'non-iid' \
-            --alpha 0.1 \
-            --rounds 50 \
-            --epochs 20 \
-            --batch_size 64 \
-            --model 'resnet' \
-            --lr 0.003
+            --client_nums 100 \
+            --client_frac 0.1 \
+            --dataset 'mnist' \
+            --part_method 'non-iid-one' \
+            --rounds 10 \
+            --epochs 10 \
+            --batch_size 10 \
+            --model 'nn_mnist' \
+            --lr 0.01
             

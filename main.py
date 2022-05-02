@@ -1,4 +1,5 @@
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 import argparse
 import importlib
 import sys
@@ -14,9 +15,9 @@ from trainers.client import Client
 from servers.server import Server
 
 # GLOBAL PARAMETERS
-k_optimizer = ['fedavg', 'fedprox']
-k_dataset = ['mnist', 'cifar10']
-k_model = ['resnet']
+k_optimizer = ['fedavg']
+k_dataset = ['cifar10', 'mnist']
+k_model = ['resnet', 'nn_mnist']
 class_num = {
     'cifar10' : 10,
     'mnist' : 10
@@ -34,40 +35,39 @@ def read_options():
     parser.add_argument('--dataset',
                         type=str,
                         choices=k_dataset,
-                        default='cifar10')
+                        default='mnist')
     parser.add_argument('--batch_size',
                         type=int,
-                        default=64)
+                        default=10)
     parser.add_argument('--epochs',
                         type=int,
-                        default=20)
+                        default=10)
     parser.add_argument('--rounds',
                         type=int,
-                        default=50)
+                        default=100)
+    # test global model for global test_set per eval_round_nums
     parser.add_argument('--eval_round_nums',
                         type=int,
                         default=1)
     parser.add_argument('--part_method',
                         type=str,
-                        default='non-iid')
+                        default='mnist_non_iid')
     parser.add_argument('--alpha',
                         type=float,
                         default=0.1)
     parser.add_argument('--model',
                         type=str,
                         choices=k_model,
-                        default='resnet')
+                        default='nn_mnist')
     parser.add_argument('--lr',
                         type=float,
-                        default=0.001)
-    # fast:every client has its own memory for model, normal:share one memory space for model
-    parser.add_argument('--mode',
-                        type=str,
-                        choices=['fast','normal'],
-                        default='fast')
+                        default=0.01)
     parser.add_argument('--client_nums',
                         type=int,
-                        default=2)
+                        default=100)
+    parser.add_argument('--client_frac',
+                        type=float,
+                        default=0.1)
     try: parsed = vars(parser.parse_args())
     except IOError as msg: parser.error(str(msg))
     # set seed
@@ -76,7 +76,7 @@ def read_options():
     np.random.seed(0)
     torch.cuda.manual_seed_all(0)
     # prepare dataset
-    main_train_dataset, main_test_dataset,  \
+    _, main_test_dataset,  \
                 clients_trainset_list, clients_testset_list=  \
                     get_dataset_fed(parsed['dataset'], class_num[parsed['dataset']], 
                                     parsed['client_nums'], parsed['part_method'], parsed['alpha'])
@@ -91,10 +91,11 @@ def read_options():
     clients = []
     for i in range(parsed['client_nums']):
         # model = model_class() if parsed['mode'] == 'fast' else global_model
-        model = model_class()
+        model = model_class(output_features=class_num[parsed['dataset']])
         trainer = model_trainer(model, epochs=parsed['epochs'], lr=parsed['lr'])
         client = Client(i, model, trainer, clients_trainset_list[i], 
                         clients_testset_list[i],
+                        # main_test_dataset,
                         batch_size=parsed['batch_size'])
         clients.append(client)
     # create optimizer in server
@@ -108,6 +109,6 @@ def read_options():
 def main():
     global_server = read_options()
     global_server.run()
-
+    
 if __name__ == '__main__':
     main()

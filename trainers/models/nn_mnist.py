@@ -1,23 +1,33 @@
+# Model is implemented for the paper, "Communication-Efficient
+#                  Learning of Deep Networks from Decentralized Data."
+# Code refers https://github.com/AshwinRJ/Federated-Learning-PyTorch
 import time
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.optim.lr_scheduler import StepLR
 from tqdm import tqdm
-from torchvision.models.resnet import resnet18
 from util.record_util import AverageMeter
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter('tensorboard_log')
-# need to set class_nums for distinct datasets
+
 class Model(nn.Module):
-    def __init__(self, input_features=3, output_features=10):
+    def __init__(self, input_features=1, output_features=10):
         super().__init__()
-        self.model = resnet18(num_classes=output_features)
-        self.model.maxpool = nn.Identity()
-        # self.fc2 = nn.Linear(1000, output_features, bias=True)
+        self.conv1 = nn.Conv2d(input_features, 10, kernel_size=5)
+        self.conv2 = nn.Conv2d(10, 20, kernel_size=5)
+        self.conv2_drop = nn.Dropout2d()
+        self.fc1 = nn.Linear(320, 50)
+        self.fc2 = nn.Linear(50, output_features)
+
     def forward(self, x):
-        x = self.model(x)
-        # x = self.fc2(x)
-        return x
+        x = F.relu(F.max_pool2d(self.conv1(x), 2))
+        x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
+        x = x.view(-1, x.shape[1]*x.shape[2]*x.shape[3])
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training)
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)
 
 class Trainer():
     def __init__(self, model, epochs, lr):
@@ -70,7 +80,7 @@ class Trainer():
                         'train_acc' :  acc_recorder.avg, 
                     }, epoch)
             '''
-        # self.lr = self.lr*0.992 # 权重衰减
+        self.lr = self.lr*0.992 # 权重衰减
         return loss_recorder, acc_recorder, time_recorder
     def self_test(self, test_loader):
         loss_recorder = AverageMeter()
@@ -103,3 +113,4 @@ class Trainer():
                 ])
                 t_loader.set_description(metric_str) # why update next line.
         return loss_recorder, acc_recorder, time_recorder
+
