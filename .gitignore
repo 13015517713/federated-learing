@@ -1,4 +1,4 @@
-tensorboard_log
+*tensorboard_log*
 __pycache__
 test.py
 data/stored_data/*
