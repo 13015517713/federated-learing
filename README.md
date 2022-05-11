@@ -6,5 +6,5 @@ This frame about federated learning is based on [fedprox](https://github.com/lit
 - Every client share one model
 
 ## todo
-- [ ] implement algorithms such as fedprox,fedper and so on
+- [ ] implement algorithms such as fedper and so on
 - [x] rewrite get_data.py to make code mode beatiful
