@@ -17,8 +17,16 @@ class_num = {
     'mnist' : 10
 }
 
+def get_debug():
+    import debugpy
+    import setproctitle
+    setproctitle.setproctitle("fednet2net")
+    debugpy.listen(10000)
+    debugpy.wait_for_client()
+
 def read_options():
     options = args_parse()
+    print(options)
     
     # set seed
     torch.manual_seed(0)
@@ -43,16 +51,16 @@ def read_options():
                                     if options['optimizer']=='fedprox' else 'trainer_common')
     trainer_lib = importlib.import_module(trainer_path)
     model_trainer = getattr(trainer_lib, 'Trainer')
-    global_trainer = model_trainer(global_model, epochs=options['epochs'], lr=options['lr']) # just for test
+    global_trainer = model_trainer(global_model, options=options) # just for test
     
     # create clients
     clients = []
     for i in range(options['client_nums']):
         model = model_class(output_features=class_num[options['dataset']])
-        trainer = model_trainer(model, epochs=options['epochs'], lr=options['lr'])
+        trainer = model_trainer(model, options)
         client = Client(i, model, trainer, clients_trainset_list[i], 
-                        # clients_testset_list[i],
-                        main_test_dataset,
+                        clients_testset_list[i],
+                        # main_test_dataset,
                         batch_size=options['batch_size'])
         clients.append(client)
         
@@ -69,4 +77,5 @@ def main():
     global_server.run()
     
 if __name__ == '__main__':
+    # get_debug()
     main()

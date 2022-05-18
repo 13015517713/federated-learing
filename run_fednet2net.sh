@@ -1,16 +1,16 @@
 #!/usr/bin/bash
-# bash run_fedprox.sh 1 ./tensorboard_logs/fedprox_non_iid/fedprox_mu1_C2
-python main.py --optimizer 'fedprox' \
+
+python main.py --optimizer 'fednet2net' \
             --client_nums 100 \
             --client_frac 0.1 \
             --dataset 'mnist' \
             --part_method 'mnist_non_iid' \
-            --rounds 20 \
+            --rounds 200 \
             --epochs 10 \
             --batch_size 10 \
             --model 'nn_mnist' \
-            --lr 0.01\
+            --wider_frac 0.3 \
+            --lr 0.01 \
             --lr_decay 1 \
-            --fedprox_mu $1\
-            --logdir './tensorboard_logs/fedall/fedprox/C2'
+            --logdir './tensorboard_logs/fednet2net/sample_equal/C2_fednet2net'
             

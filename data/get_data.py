@@ -64,7 +64,7 @@ def non_iid_dirichlet(train_y, class_nums, client_nums, alpha):
             data_idx[i] += idcs.tolist()
     return data_idx
 def mnist_non_iid(train_y, client_num):
-    num_shards, num_imgs = 100, 600
+    num_shards, num_imgs = 200, 300
     idx_shard = [i for i in range(num_shards)]
     data_idx = [[] for i in range(client_num)]
     idxs = np.arange(num_shards*num_imgs)
@@ -74,7 +74,7 @@ def mnist_non_iid(train_y, client_num):
     idxs = idxs_labels[0, :]
     # divide and assign 2 shards/client
     for i in range(client_num):
-        rand_set = set(np.random.choice(idx_shard, 1, replace=False))
+        rand_set = set(np.random.choice(idx_shard, 2, replace=False))
         idx_shard = list(set(idx_shard) - rand_set)
         data_idx[i] = np.concatenate([idxs[rand*num_imgs:(rand+1)*num_imgs]
                                      for rand in rand_set], axis=0)

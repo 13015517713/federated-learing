@@ -6,12 +6,12 @@ from tqdm import tqdm
 from util.record_util import AverageMeter
 
 class Trainer():
-    def __init__(self, model, epochs, lr, mu=0.0001):
+    def __init__(self, model, options):
         self.model = model
-        self.epochs = epochs
-        self.lr = lr
-        self.mu = mu
-
+        self.epochs = options['epochs']
+        self.lr = options['lr']
+        self.lr_decay = options['lr_decay']
+        self.mu = options['fedprox_mu']
     def self_train(self, train_loader):
         loss_recorder = AverageMeter()
         acc_recorder = AverageMeter()
@@ -60,7 +60,7 @@ class Trainer():
                 optim.zero_grad()
                 loss.backward()
                 optim.step()
-        # self.lr = self.lr*0.992
+        self.lr = self.lr*self.lr_decay
         return loss_recorder, acc_recorder, time_recorder
 
     def self_test(self, test_loader):
