@@ -3,8 +3,9 @@ This frame about federated learning is based on [fedprox](https://github.com/lit
 
 ## objects
 - Simulate more clients in a standalone machine
-- Every client share one model
+- Every client has own model
 
 ## todo
-- [ ] implement algorithms such as fedprox,fedper and so on
-- [ ] support fast model in which every model has its own memory. It's convenient to extend.
+- [x] rewrite get_data.py to make code more beatiful
+- [ ] implement algorithms such as fedper and so on
+- [ ] keep the same random initialization
