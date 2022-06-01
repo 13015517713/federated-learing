@@ -29,6 +29,9 @@ def get_dataset_fed(data_name, class_nums, client_nums, method, alpha=None, data
     elif method == "mnist_non_iid":
         # dataset splits to 200*300, 300 belongs to one class,  
         data_idx = mnist_non_iid(train_y, client_nums)
+    elif method == "cifar_non_iid":
+        # dataset splits to 200*300, 300 belongs to one class,  
+        data_idx = cifar_non_iid(train_y, client_nums)
     else: 
         # just one class per client
         data_idx = non_iid_one_class(train_y, class_nums, client_nums)
@@ -65,6 +68,22 @@ def non_iid_dirichlet(train_y, class_nums, client_nums, alpha):
     return data_idx
 def mnist_non_iid(train_y, client_num):
     num_shards, num_imgs = 200, 300
+    idx_shard = [i for i in range(num_shards)]
+    data_idx = [[] for i in range(client_num)]
+    idxs = np.arange(num_shards*num_imgs)
+    # sort labels
+    idxs_labels = np.vstack((idxs, train_y))
+    idxs_labels = idxs_labels[:, idxs_labels[1, :].argsort()]
+    idxs = idxs_labels[0, :]
+    # divide and assign 2 shards/client
+    for i in range(client_num):
+        rand_set = set(np.random.choice(idx_shard, 2, replace=False))
+        idx_shard = list(set(idx_shard) - rand_set)
+        data_idx[i] = np.concatenate([idxs[rand*num_imgs:(rand+1)*num_imgs]
+                                     for rand in rand_set], axis=0)
+    return data_idx
+def cifar_non_iid(train_y, client_num):
+    num_shards, num_imgs = 20, 2500
     idx_shard = [i for i in range(num_shards)]
     data_idx = [[] for i in range(client_num)]
     idxs = np.arange(num_shards*num_imgs)

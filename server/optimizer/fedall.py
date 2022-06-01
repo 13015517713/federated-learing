@@ -1,6 +1,7 @@
 import copy
 import torch
 import logging
+from torch.utils.data.dataloader import DataLoader
 from server.optimizer.fedbase import BaseServer
 from util.model_util import set_dict_params_to
 class Server(BaseServer):
@@ -19,10 +20,11 @@ class Server(BaseServer):
         for i in range(rounds):
             # test global model and test client model 
             if i % self.options['eval_round_nums'] == 0:
+                # 测试下训练集的也比较好
                 loss_recorder, acc_recorder, _ = self.global_trainer.self_test(self.test_loader)
                 logging.info("global model test, loss=%.4f, acc=%.4f."%(loss_recorder.avg, acc_recorder.avg) )
-                writer.add_scalar('gloabl_acc', acc_recorder.avg, i+1)
-                writer.add_scalar('global_loss', loss_recorder.avg, i+1)
+                writer.add_scalar('gloabl_test_acc', acc_recorder.avg, i+1)
+                writer.add_scalar('global_test_loss', loss_recorder.avg, i+1)
                 cur_acc = acc_recorder.avg.item()
                 if cur_acc > best_acc:
                     best_acc = copy.copy(cur_acc)

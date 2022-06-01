@@ -24,7 +24,7 @@ class Server(BaseServer):
                 writer.add_scalar('gloabl_acc', acc_recorder.avg, i+1)
                 writer.add_scalar('global_loss', loss_recorder.avg, i+1)
                 cur_acc = acc_recorder.avg.item()
-                if cur_acc >= 50 and cur_acc > best_acc:
+                if cur_acc > best_acc:
                     best_acc = copy.copy(cur_acc)
                     best_model = copy.deepcopy(self.global_model)
             # select clients train
@@ -38,4 +38,5 @@ class Server(BaseServer):
                 collect_params.append((num_samples, params))
             self.lastest_params = self.aggerate(collect_params)
             set_dict_params_to(self.global_model, self.lastest_params)
+        best_model = best_model.cpu()
         torch.save(best_model.state_dict(), f'{logdir}/model.stat')

@@ -1,8 +1,9 @@
 import argparse
 
-k_optimizer = ['fedavg', 'fedprox', 'fednet2net']
+k_optimizer = ['fedavg', 'fedprox', 'fednet2net', 'fedall', 'fedall_one_shot']
 k_dataset = ['cifar10', 'mnist']
-k_model = ['resnet', 'nn_mnist', 'nn_cifar']
+k_model = ['resnet', 'nn_mnist', 'nn_cifar', 'nn_fedall', 'nn_fedall_average', \
+            'nn_fedall_max', 'nn_fedall_identity']
 
 def args_parse():
     ''' Parse command line arguments or load defaults '''
@@ -44,7 +45,7 @@ def args_parse():
                         default=1)
     parser.add_argument('--logdir',
                         type=str,
-                        default='./tensorboard_logs/fedprox')
+                        default='./tensorboard_logs/trash_hole')
     # local configuration
     parser.add_argument('--batch_size',
                         type=int,
@@ -56,6 +57,10 @@ def args_parse():
                         type=str,
                         choices=k_model,
                         default='nn_mnist')
+    parser.add_argument('--model_source',
+                        nargs='+')
+    parser.add_argument('--model_type',
+                        nargs='+')
     parser.add_argument('--lr',
                         type=float,
                         default=0.01)

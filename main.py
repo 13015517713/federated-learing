@@ -20,7 +20,7 @@ class_num = {
 def get_debug():
     import debugpy
     import setproctitle
-    setproctitle.setproctitle("fednet2net")
+    setproctitle.setproctitle("fedall")
     debugpy.listen(10000)
     debugpy.wait_for_client()
 
@@ -44,7 +44,10 @@ def read_options():
     model_path = f'local.model.%s' % (options['model'])
     model_lib = importlib.import_module(model_path)
     model_class = getattr(model_lib, 'Model')
-    global_model = model_class(output_features=class_num[options['dataset']])
+    if 'fedall' in options['optimizer']:
+        global_model = model_class(options['model_source'], options['model_type'])
+    else:
+        global_model = model_class()
     
     # create trainer
     trainer_path = f'local.trainer.%s' % ('trainer_fedprox' 
@@ -56,7 +59,10 @@ def read_options():
     # create clients
     clients = []
     for i in range(options['client_nums']):
-        model = model_class(output_features=class_num[options['dataset']])
+        if 'fedall' in options['optimizer']:
+           model = model_class(options['model_source'], options['model_type'])
+        else:
+            model = model_class()
         trainer = model_trainer(model, options)
         client = Client(i, model, trainer, clients_trainset_list[i], 
                         clients_testset_list[i],
