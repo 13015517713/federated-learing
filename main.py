@@ -8,38 +8,60 @@ import random
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(filename)s[line:%(lineno)d] %(levelname)s %(message)s',
                     datefmt='%a, %d %b %Y %H:%M:%S')
-from data.get_data import get_dataset_fed
+from data.get_data import get_dataset_fed, get_dataset_fixed
 from local.client import Client
 from util.options import args_parse
 
+# some datasets need fixed client_nums
+fixed_dataset = [
+    'shakespeare'
+]
+
 class_num = {
     'cifar10' : 10,
-    'mnist' : 10
+    'cifar100' : 100,
+    'mnist' : 10,
+    'fmnist' : 10,
+    'shakespeare' : 80,
 }
 
 def get_debug():
     import debugpy
     import setproctitle
     setproctitle.setproctitle("fedall")
-    debugpy.listen(10000)
+    debugpy.listen(10001)
     debugpy.wait_for_client()
 
 def read_options():
     options = args_parse()
     print(options)
     
-    # set seed
+    # set seed to keep same dataset
     torch.manual_seed(0)
     random.seed(0)
     np.random.seed(0)
     torch.cuda.manual_seed_all(0)
     
     # prepare dataset
-    _, main_test_dataset,  \
-        clients_trainset_list, clients_testset_list=  \
-            get_dataset_fed(options['dataset'], class_num[options['dataset']], 
-                options['client_nums'], options['part_method'], options['alpha'])
-
+    if options['dataset'] in fixed_dataset:
+        client_num, _, main_test_dataset,  \
+            clients_trainset_list, clients_testset_list=  \
+                    get_dataset_fixed(options['dataset'])
+        options['client_nums'] = client_num
+    else:    
+        _, main_test_dataset,  \
+            clients_trainset_list, clients_testset_list=  \
+                get_dataset_fed(options['dataset'], class_num[options['dataset']], 
+                    options['client_nums'], options['part_method'], options['alpha'])
+        
+    
+    # set seed to initialize different parameters and selected client
+    seed  = options['seed']
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    
     # create model
     model_path = f'local.model.%s' % (options['model'])
     model_lib = importlib.import_module(model_path)
@@ -47,11 +69,11 @@ def read_options():
     if 'fedall' in options['optimizer']:
         global_model = model_class(options['model_source'], options['model_type'])
     else:
-        global_model = model_class()
+        global_model = model_class(output_features=class_num[options['dataset']])
     
     # create trainer
-    trainer_path = f'local.trainer.%s' % ('trainer_fedprox' 
-                                    if options['optimizer']=='fedprox' else 'trainer_common')
+    trainer_path = f'local.trainer.%s' % ('trainer_fedprox' if options['optimizer'] in 
+                                        ['fedprox', 'fedall_prox'] else 'trainer_common')
     trainer_lib = importlib.import_module(trainer_path)
     model_trainer = getattr(trainer_lib, 'Trainer')
     global_trainer = model_trainer(global_model, options=options) # just for test
@@ -59,12 +81,13 @@ def read_options():
     # create clients
     clients = []
     for i in range(options['client_nums']):
-        if 'fedall' in options['optimizer']:
-           model = model_class(options['model_source'], options['model_type'])
-        else:
-            model = model_class()
-        trainer = model_trainer(model, options)
-        client = Client(i, model, trainer, clients_trainset_list[i], 
+        # test fedall
+        # if 'fedall' in options['optimizer']:
+        #    model = model_class(options['model_source'], options['model_type'])
+        # else:
+        #     model = model_class()
+        trainer = model_trainer(global_model, options)
+        client = Client(i, global_model, trainer, clients_trainset_list[i], 
                         clients_testset_list[i],
                         # main_test_dataset,
                         batch_size=options['batch_size'])

@@ -20,13 +20,13 @@
 #             --model_type 'nn_cifar' 'nn_cifar'
 
 # test fedall_identity
-python main.py --optimizer 'fedall_one_shot' \
-            --client_nums 10 \
-            --dataset 'cifar10' \
-            --part_method 'iid' \
-            --model 'nn_fedall_identity' \
-            --model_source './tensorboard_logs/fedall/cifar_2000r/fedavg/model.stat' \
-            --model_type 'nn_cifar'
+# python main.py --optimizer 'fedall_one_shot' \
+#             --client_nums 100 \
+#             --dataset 'cifar10' \
+#             --part_method 'iid' \
+#             --model 'nn_fedall_identity' \
+#             --model_source './tensorboard_logs/fedall/cifar_2000r/fedavg/model.stat' \
+#             --model_type 'nn_cifar'
 
 # test for mnist
 

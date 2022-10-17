@@ -1,9 +1,9 @@
 import argparse
 
-k_optimizer = ['fedavg', 'fedprox', 'fednet2net', 'fedall', 'fedall_one_shot']
-k_dataset = ['cifar10', 'mnist']
-k_model = ['resnet', 'nn_mnist', 'nn_cifar', 'nn_fedall', 'nn_fedall_average', \
-            'nn_fedall_max', 'nn_fedall_identity']
+k_optimizer = ['fedavg', 'fedprox', 'fednet2net', 'fedall', 'fedall_one_shot', 'fedall_prox']
+k_dataset = ['cifar10', 'cifar100', 'mnist', 'fmnist', 'shakespeare']
+k_model = ['resnet', 'nn_mnist', 'nn_cifar', 'nn_fedall', 'nn_fedall_80', 'nn_fedall_average', \
+            'nn_fedall_max', 'nn_fedall_identity', 'nn_shakespeare']
 
 def args_parse():
     ''' Parse command line arguments or load defaults '''
@@ -23,11 +23,14 @@ def args_parse():
                         default='mnist')
     parser.add_argument('--part_method',
                         type=str,
-                        default='mnist_non_iid')
+                        default='iid')
     parser.add_argument('--alpha',
                         type=float,
                         default=0.1)
     # gloabl configuration
+    parser.add_argument('--seed',
+                        type=int,
+                        default=0)
     parser.add_argument('--rounds',
                         type=int,
                         default=200)

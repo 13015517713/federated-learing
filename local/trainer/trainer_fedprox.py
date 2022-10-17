@@ -72,9 +72,9 @@ class Trainer():
                 input = input.cuda()
                 target = target.cuda()
                 output = model(input)
-                loss = loss_func(output, target) # 出现问题
+                loss = loss_func(output, target)
                 
-                pred = output.detach().cpu().argmax(dim=1) # 预测的全是一类
+                pred = output.detach().cpu().argmax(dim=1)
                 batch_size = target.size(0)
                 acc_recorder.update(100*(pred==target.cpu()).float().sum() / batch_size, batch_size)
                 loss_recorder.update(loss.item())
