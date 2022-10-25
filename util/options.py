@@ -1,6 +1,6 @@
 import argparse
 
-k_optimizer = ['fedavg', 'fedprox', 'fednet2net', 'fedall', 'fedall_one_shot', 'fedall_prox']
+k_optimizer = ['fedavg', 'fedprox', 'fednet2net', 'fedall', 'fedall_one_shot', 'fedall_prox', 'fedhete']
 k_dataset = ['cifar10', 'cifar100', 'mnist', 'fmnist', 'shakespeare']
 k_model = ['resnet', 'nn_mnist', 'nn_cifar', 'nn_fedall', 'nn_fedall_80', 'nn_fedall_average', \
             'nn_fedall_max', 'nn_fedall_identity', 'nn_shakespeare']
@@ -27,6 +27,7 @@ def args_parse():
     parser.add_argument('--alpha',
                         type=float,
                         default=0.1)
+    
     # gloabl configuration
     parser.add_argument('--seed',
                         type=int,
@@ -49,6 +50,7 @@ def args_parse():
     parser.add_argument('--logdir',
                         type=str,
                         default='./tensorboard_logs/trash_hole')
+
     # local configuration
     parser.add_argument('--batch_size',
                         type=int,
@@ -70,6 +72,18 @@ def args_parse():
     parser.add_argument('--lr_decay',
                         type=float,
                         default=1)
+    
+    # for fedhete
+    parser.add_argument('--client_tiers',
+                        type=int,
+                        default=4)
+    parser.add_argument('--model_tiers', # 一个基线种群有多少模型
+                        type=int,
+                        default=100)
+    parser.add_argument('--cover_scale', # 分配客户端到tier的比例，Σ_{i=0}^{n-1}(cs/n)
+                        type=float,
+                        default=1)
+
     
     try: options = vars(parser.parse_args())
     except IOError as msg: parser.error(str(msg))

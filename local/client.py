@@ -9,8 +9,11 @@ class Client():
         self.trainer = trainer
         self.train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0)
         self.test_loader = DataLoader(test_set, batch_size=128, shuffle=True, num_workers=0)
+        self.aux_trainer = None # 辅助蒸馏
     def train(self):
         return self.trainer.self_train(self.train_loader)
+    def train_distill(self, teacher_models, alpha, temperature):
+        return self.aux_trainer.self_train(self.train_loader, teacher_models, alpha, temperature)
     def test(self):
         return self.trainer.self_test(self.test_loader)
     def get_data_nums(self):
